@@ -66,7 +66,7 @@ class KnowledgeGraph:
         return False 
     
     
-    def get_learning_path(self, start_concept, goal_concept, already_known_concepts: list | None) -> list: # user wants to instruct what they want to know
+    def get_learning_path(self, start_concept, goal_concept, already_known_concepts=None) -> list: # user wants to instruct what they want to know
         """
         Finds the optimal path for generating learning paths given what the user 
         wants to know and predecessors for verifying what a user needs to know
@@ -102,7 +102,7 @@ class KnowledgeGraph:
         learning_path = []
         current_node = goal_concept
         while current_node is not None:
-            if not already_known_concepts and current_node not in already_known_concepts: #what is already known concepts is None 
+            if already_known_concepts is None or current_node not in already_known_concepts: #what is already known concepts is None 
                 learning_path.append(current_node)
             current_node = parent[current_node]
             
