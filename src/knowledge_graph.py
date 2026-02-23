@@ -1,7 +1,11 @@
 
-#create the knowledge graph data structure 
-# Class should have init, add edge, shortest path with BFS, has cycle 
-# has cycle will ensure that the prereq of A is B and B is not a prereq of A because this will continuously loop 
+"""
+File is responsible for creating the knowledge graph, which abstracts the 
+prerequisites and the path for learning topics. A graph data structure is 
+implemented with the nodes as the concepts and the edges represent the 
+relationship between concepts. 
+"""
+
 # useful functions is shortest path for generating learning paths and predecessors for checking what a user needs to know before reaching target concept(DAG validation [direct acyclic graph])
 
 from collections import deque 
@@ -26,40 +30,71 @@ class KnowledgeGraph:
         return True
     
     def has_cycle(self, start_node) -> bool:
-        """_summary_
-        Stack: responsible for what to explore 
-        current_path: active route to the node 
-        visited: all the nodes processed already 
-        Args:
-            start_node (_type_): _description_
-
-        Returns:
-            bool: _description_ 
         """
+        Checks for a cycle and ensures that the prerequisite of A is B 
+        and B is not a prerequisite of A. This continuous loop could influence 
+        the learning path computation and will be the direct acyclic validation(DAG)
+        """
+        
         if start_node not in self.nodes:
             return "Pass an actual value in the graph"
         visited = set()
         current_path = set()
         stack = deque([start_node])
-        BACKTRACK = object() 
+        BACKTRACK = object() # identifier when to remove node from current path, when all its neighbors have been visited 
 
         while stack:
-            current_node = stack.pop()
-            if isinstance(current_node, tuple) and current_node[0] is BACKTRACK: 
-                current_path.remove(current_node[1])
+            concept = stack.pop()
+            if isinstance(concept, tuple) and concept[0] is BACKTRACK: 
+                current_path.remove(concept[1])
                 continue 
-            if current_node not in visited:
-                visited.add(current_node)
-                current_path.add(current_node)
-                stack.append((BACKTRACK, current_node))
-                for edge in self.edges[current_node]:
-                    if edge in visited and edge in current_path:
+            if concept not in visited:
+                visited.add(concept)
+                current_path.add(concept)
+                stack.append((BACKTRACK, concept)) # before adding edges, since it should be removed after all its neighbors(follows stack LIFO)
+                for edge in self.edges[concept]:
+                    if edge in visited and edge in current_path: 
                         return True 
                     stack.append(edge)
 
         return False 
     
     
-    def get_learning_path(self):
-        pass 
-    
+    def get_learning_path(self, start_concept, goal_concept, already_known_concepts = []) -> list: # user wants to instruct what they want to know
+        """
+        Finds the optimal path for generating learning paths given what the user 
+        wants to know and predecessors for verifying what a user needs to know
+        before reaching target concept. Utilizes the direct acyclic graph to 
+        perform properly. The already known concepts parameter is the initial
+        knowledge the user already has which can be skipped. Used a dictionary 
+        for memory purposes and handles efficiency when scale occurs
+        """
+        if start_concept not in self.add_node or goal_concept not in self.nodes:
+            print("Need a start concept and final concept")
+            return []
+        
+        queue = deque([start_concept])
+        visited = {start_concept} #needed since concepts can be already seen/cycle 
+        parent = {start_concept: None} # tuple approach stores every journey while the dict only stores who introduces you to each node 
+        while queue:
+            concept = queue.popleft()
+        
+            for edge in self.edges[concept]:
+                if edge not in visited:
+                    parent[edge] = concept
+                    queue.append(edge)
+                    visited.add(edge)
+        
+        # if goal concept is not in the path 
+        if goal_concept not in parent:
+            print("No path exists between these concepts")
+            return []
+        #path reconstruction 
+        learning_path = []
+        current_node = goal_concept
+        while current_node is not None:
+            if current_node not in already_known_concepts:
+                learning_path.append(current_node)
+            current_node = parent[current_node]
+        
+        return learning_path.reverse() #does it in place  
