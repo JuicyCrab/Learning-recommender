@@ -6,7 +6,6 @@ implemented with the nodes as the concepts and the edges represent the
 relationship between concepts. 
 """
 
-# useful functions is shortest path for generating learning paths and predecessors for checking what a user needs to know before reaching target concept(DAG validation [direct acyclic graph])
 
 from collections import deque 
 
@@ -33,7 +32,7 @@ class KnowledgeGraph:
         """
         Checks for a cycle and ensures that the prerequisite of A is B 
         and B is not a prerequisite of A. This continuous loop could influence 
-        the learning path computation and will be the direct acyclic validation(DAG)
+        the learning path computation and will be the direct acyclic validation(DAG).
         """
         
         if start_node not in self.nodes:
@@ -67,7 +66,7 @@ class KnowledgeGraph:
         before reaching target concept. Utilizes the direct acyclic graph to 
         perform properly. The already known concepts parameter is the initial
         knowledge the user already has which can be skipped. Used a dictionary 
-        for memory purposes and handles efficiency when scale occurs
+        for memory purposes and efficiency when scale increases.
         """
         if start_concept not in self.add_node or goal_concept not in self.nodes:
             print("Need a start concept and final concept")
@@ -89,6 +88,7 @@ class KnowledgeGraph:
         if goal_concept not in parent:
             print("No path exists between these concepts")
             return []
+        
         #path reconstruction 
         learning_path = []
         current_node = goal_concept
