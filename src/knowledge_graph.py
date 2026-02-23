@@ -14,15 +14,22 @@ class KnowledgeGraph:
         self.nodes = {}
         self.edges = {}
     
-    def add_node(self, concept, difficulty=None, description=None) -> bool:
+    def string_format(self, concept: str) -> str:
+        return concept.lower().strip()
+    
+    def add_node(self, concept, difficulty=None, description=None, estimated_study_time=None) -> bool:
+        concept = self.string_format(concept)
         self.nodes[concept] = {
             'difficulty': difficulty,
-            'description': description
+            'description': description,
+            'estimated_study_time': estimated_study_time
         }
         self.edges[concept] = []
         return True 
     
     def add_edge(self, concept, other_concept) -> bool:
+        concept = self.string_format(concept)
+        other_concept = self.string_format(other_concept)
         if concept not in self.nodes or other_concept not in self.nodes:
             return False
         self.edges[concept].append(other_concept)
@@ -59,7 +66,7 @@ class KnowledgeGraph:
         return False 
     
     
-    def get_learning_path(self, start_concept, goal_concept, already_known_concepts = []) -> list: # user wants to instruct what they want to know
+    def get_learning_path(self, start_concept, goal_concept, already_known_concepts: list | None) -> list: # user wants to instruct what they want to know
         """
         Finds the optimal path for generating learning paths given what the user 
         wants to know and predecessors for verifying what a user needs to know
@@ -68,10 +75,12 @@ class KnowledgeGraph:
         knowledge the user already has which can be skipped. Used a dictionary 
         for memory purposes and efficiency when scale increases.
         """
-        if start_concept not in self.add_node or goal_concept not in self.nodes:
+        start_concept = self.string_format(start_concept)
+        goal_concept = self.string_format(goal_concept)
+        
+        if start_concept not in self.nodes or goal_concept not in self.nodes:
             print("Need a start concept and final concept")
             return []
-        
         queue = deque([start_concept])
         visited = {start_concept} #needed since concepts can be already seen/cycle 
         parent = {start_concept: None} # tuple approach stores every journey while the dict only stores who introduces you to each node 
@@ -93,8 +102,9 @@ class KnowledgeGraph:
         learning_path = []
         current_node = goal_concept
         while current_node is not None:
-            if current_node not in already_known_concepts:
+            if not already_known_concepts and current_node not in already_known_concepts: #what is already known concepts is None 
                 learning_path.append(current_node)
             current_node = parent[current_node]
-        
-        return learning_path.reverse() #does it in place  
+            
+      
+        return learning_path[::-1]   #return learning.reverse() returns none because of inline handling 
